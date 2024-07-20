@@ -9,14 +9,16 @@ services:
       - ./upload:/var/www/html
     depends_on:
       - mysql
+    env_file:
+      - .env
     command: >
       bash -c "chown -R 1000:1000 /var/www/html &&
                chmod -R 755 /var/www/html &&
                if [ ! -f /var/www/html/install.lock ]; then
-                 wait-for-it mysql:3306 -t 60 &&
+                 wait-for-it ${OPENCART_DB_HOSTNAME}:${OPENCART_DB_PORT} -t 60 &&
                  cp /var/www/html/config-dist.php /var/www/html/config.php &&
                  cp /var/www/html/admin/config-dist.php /var/www/html/admin/config.php &&
-                 php /var/www/html/install/cli_install.php install --username admin --password admin --email email@example.com --http_server http://localhost/ --db_driver mysqli --db_hostname mysql --db_username root --db_password opencart --db_database opencart --db_port 3306 --db_prefix oc_ &&
+                 php /var/www/html/install/cli_install.php install --username ${OPENCART_ADMIN_USERNAME} --password ${OPENCART_ADMIN_PASSWORD} --email ${OPENCART_ADMIN_EMAIL} --http_server ${OPENCART_HTTP_SERVER} --db_driver ${OPENCART_DB_DRIVER} --db_hostname ${OPENCART_DB_HOSTNAME} --db_username ${OPENCART_DB_USERNAME} --db_password ${OPENCART_DB_PASSWORD} --db_database ${OPENCART_DB_DATABASE} --db_port ${OPENCART_DB_PORT} --db_prefix ${OPENCART_DB_PREFIX} &&
                  touch /var/www/html/install.lock;
                fi &&
                apache2-foreground"
@@ -25,9 +27,8 @@ services:
     image: mysql:5.7
     ports:
       - "3306:3306"
-    environment:
-      - MYSQL_ROOT_PASSWORD=opencart
-      - MYSQL_DATABASE=opencart
+    env_file:
+      - .env
 
   adminer:
     image: adminer:latest
@@ -46,7 +47,5 @@ services:
 
   postgres:
     image: postgres:latest
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=opencart
-      - POSTGRES_DB=opencart
+    env_file:
+      - .env

@@ -46,3 +46,4 @@
 /.php-cs-fixer.cache
 
 /upload/system/storage/vendor/*
+.env
